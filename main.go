@@ -2,14 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
+	"nedorezov-test-task/config"
 )
 
 var connection *sql.DB
-
-const connectionString = "host=127.0.0.1 port=5432 user=postgres password=12345 dbname=postgres sslmode=disable"
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -18,11 +18,20 @@ func init() {
 }
 
 func main() {
+	conf := config.New()
+	fmt.Println(conf.HOST)
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		conf.DB.HOST, conf.DB.PORT, conf.DB.USER, conf.DB.PASSWORD, conf.DB.DBNAME, conf.DB.SSLMODE)
+
+	if connection, err := sql.Open("postgres", connectionString); err != nil {
+		log.Fatal(err)
+	}
+
 	router := gin.Default()
 
 	router.GET("/", handlerIndex)
 
-	router.Run(":8080")
+	_ = router.Run(":8080")
 }
 
 func handlerIndex(c *gin.Context) {
